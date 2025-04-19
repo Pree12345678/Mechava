@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Mechava</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet" />
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      margin: 0;
+      padding: 0;
+      background: #f9fafb;
+    }
+    .fade-in {
+      opacity: 0;
+      transform: translateY(20px);
+      transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+    }
+    .fade-in.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .hover-scale {
+      transition: transform 0.3s ease;
+    }
+    .hover-scale:hover {
+      transform: scale(1.05);
+    }
+  </style>
+</head>
+<body class="flex flex-col min-h-screen">
+  <!-- Header -->
+  <header class="bg-gradient-to-r from-blue-700 to-blue-900 text-white py-6 shadow-lg sticky top-0 z-50">
+    <div class="container mx-auto px-6 flex justify-between items-center">
+      <h1 class="text-3xl font-bold tracking-tight">Mechava</h1>
+      <nav class="space-x-6">
+        <a href="login.html" class="text-white hover:text-blue-200 transition">User Login</a>
+        <a href="admin_login.html" class="text-white hover:text-blue-200 transition">Admin Login</a>
+        <a href="#get-started" class="bg-white text-blue-700 px-4 py-2 rounded-lg font-semibold hover:bg-blue-100 transition">Get Started</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Hero Section -->
+  <main class="flex-grow">
+    <section class="bg-gradient-to-b from-blue-50 to-white py-20 text-center">
+      <div class="container mx-auto px-6">
+        <h2 class="text-5xl font-bold text-gray-900 mb-6 fade-in">Simplify Your Car Invoice Management</h2>
+        <p class="text-xl text-gray-600 max-w-2xl mx-auto mb-10 fade-in">
+          Mechava helps you track trips, calculate hire charges, and manage invoices effortlessly. Built for professionals, designed for ease.
+        </p>
+        <a href="login.html" class="inline-block bg-blue-700 text-white px-8 py-4 rounded-lg text-lg font-semibold hover:bg-blue-800 transition hover-scale fade-in" id="get-started">
+          Start Free Trial
+        </a>
+      </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="py-20 bg-white">
+      <div class="container mx-auto px-6">
+        <h3 class="text-3xl font-bold text-center text-gray-900 mb-12 fade-in">Why Choose Mechava?</h3>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div class="bg-gray-50 p-6 rounded-lg shadow-md hover-scale fade-in">
+            <i class="fas fa-road text-blue-700 text-4xl mb-4"></i>
+            <h4 class="text-xl font-semibold text-gray-900 mb-2">Trip Tracking</h4>
+            <p class="text-gray-600">Easily log and monitor trip details with real-time updates and insights.</p>
+          </div>
+          <div class="bg-gray-50 p-6 rounded-lg shadow-md hover-scale fade-in">
+            <i class="fas fa-calculator text-blue-700 text-4xl mb-4"></i>
+            <h4 class="text-xl font-semibold text-gray-900 mb-2">Automated Calculations</h4>
+            <p class="text-gray-600">Accurately calculate hire charges with customizable rates and taxes.</p>
+          </div>
+          <div class="bg-gray-50 p-6 rounded-lg shadow-md hover-scale fade-in">
+            <i class="fas fa-file-invoice text-blue-700 text-4xl mb-4"></i>
+            <h4 class="text-xl font-semibold text-gray-900 mb-2">Invoice Management</h4>
+            <p class="text-gray-600">Generate, store, and share professional invoices in just a few clicks.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="py-20 bg-blue-700 text-white text-center">
+      <div class="container mx-auto px-6">
+        <h3 class="text-3xl font-bold mb-6 fade-in">Ready to Streamline Your Workflow?</h3>
+        <p class="text-lg max-w-xl mx-auto mb-8 fade-in">
+          Join thousands of professionals using Mechava to manage their car hire business with ease.
+        </p>
+        <a href="login.html" class="inline-block bg-white text-blue-700 px-8 py-4 rounded-lg text-lg font-semibold hover:bg-gray-100 transition hover-scale fade-in">
+          Get Started Now
+        </a>
+      </div>
+    </section>
+  </main>
+
+  <!-- Footer -->
+  <footer class="bg-gray-900 text-gray-300 py-10">
+    <div class="container mx-auto px-6">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div>
+          <h4 class="text-lg font-semibold text-white mb-4">Mechava</h4>
+          <p>Your trusted partner for professional car invoice management.</p>
+        </div>
+        <div>
+          <h4 class="text-lg font-semibold text-white mb-4">Links</h4>
+          <ul class="space-y-2">
+            <li><a href="login.html" class="hover:text-blue-400 transition">User Login</a></li>
+            <li><a href="admin_login.html" class="hover:text-blue-400 transition">Admin Login</a></li>
+            <li><a href="#get-started" class="hover:text-blue-400 transition">Get Started</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4 class="text-lg font-semibold text-white mb-4">Contact</h4>
+          <p>Email: preetha3677@gmail.com</p>
+          <p>Phone: +91 9945885094</p>
+        </div>
+      </div>
+      <div class="mt-8 text-center">
+        <p>© 2025 Mechava. All rights reserved.</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Animation Script -->
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const elements = document.querySelectorAll('.fade-in');
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('visible');
+            observer.unobserve(entry.target);
+          }
+        });
+      }, { threshold: 0.1 });
+
+      elements.forEach(element => observer.observe(element));
+    });
+  </script>
+</body>
+</html>

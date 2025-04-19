@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Mechava - Admin Dashboard</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet" />
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #f3f4f6;
+      margin: 0;
+      padding: 0;
+      color: #1f2937;
+    }
+    .sidebar {
+      transition: transform 0.3s ease-in-out;
+      background: #1f2937;
+    }
+    .sidebar-hidden {
+      transform: translateX(-100%);
+    }
+    .fade-in {
+      opacity: 0;
+      transform: translateY(20px);
+      transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+    }
+    .fade-in.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .hover-scale {
+      transition: transform 0.3s ease;
+    }
+    .hover-scale:hover {
+      transform: scale(1.05);
+    }
+    .modal-bg {
+      background-color: rgba(0, 0, 0, 0.5);
+    }
+    .input-focus {
+      transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    }
+    .input-focus:focus {
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+    }
+    .avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: #d1d5db;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+    @media (max-width: 768px) {
+      .sidebar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        z-index: 50;
+        width: 250px;
+        height: 100%;
+      }
+      .main-content {
+        margin-left: 0;
+      }
+      .summary-card {
+        padding: 1rem;
+      }
+    }
+  </style>
+</head>
+<body class="min-h-screen flex">
+  <!-- Sidebar -->
+  <aside class="sidebar text-white w-64 flex-shrink-0" aria-label="Sidebar">
+    <div class="p-6">
+      <h1 class="text-2xl font-bold mb-8">Mechava Admin</h1>
+      <nav class="space-y-2">
+        <button id="usersSectionBtn" class="w-full text-left px-4 py-3 rounded-lg bg-gray-800 hover:bg-gray-700 transition flex items-center" aria-label="Registered Users">
+          <i class="fas fa-users mr-3"></i> Registered Users
+        </button>
+        <button id="invoicesSectionBtn" class="w-full text-left px-4 py-3 rounded-lg bg-gray-800 hover:bg-gray-700 transition flex items-center" aria-label="Invoice Details">
+          <i class="fas fa-file-invoice mr-3"></i> Invoice Details
+        </button>
+        <button id="logoutBtn" class="w-full text-left px-4 py-3 rounded-lg bg-red-600 hover:bg-red-700 transition flex items-center mt-4" aria-label="Logout">
+          <i class="fas fa-sign-out-alt mr-3"></i> Logout
+        </button>
+      </nav>
+    </div>
+  </aside>
+
+  <!-- Mobile Sidebar Toggle -->
+  <button id="sidebarToggle" class="md:hidden fixed top-4 left-4 z-50 text-white bg-blue-600 p-2 rounded-lg hover:bg-blue-700 transition" aria-label="Toggle Sidebar">
+    <i class="fas fa-bars"></i>
+  </button>
+
+  <!-- Main Content -->
+  <main class="main-content flex-grow p-6 md:ml-64">
+    <header class="bg-white p-4 rounded-lg shadow mb-8 flex justify-between items-center" aria-label="Header">
+      <h1 class="text-2xl font-bold text-gray-900">Admin Dashboard</h1>
+      <div class="flex items-center space-x-4">
+        <input type="text" placeholder="Search..." class="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" aria-label="Search" />
+        <div class="relative">
+          <button id="profileBtn" class="w-10 h-10 bg-gray-300 rounded-full flex items-center justify-center hover:bg-gray-400" aria-label="User Profile">
+            <i class="fas fa-user"></i>
+          </button>
+          <div id="profileDropdown" class="hidden absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-2 z-50" aria-label="Profile Menu">
+            <a href="#" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">Profile</a>
+            <a href="#" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">Settings</a>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Summary Section -->
+    <section class="mb-8 fade-in" aria-label="Summary">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="summary-card bg-blue-50 p-6 rounded-lg shadow hover-scale flex items-center">
+          <i class="fas fa-users text-blue-600 text-2xl mr-4"></i>
+          <div>
+            <h3 class="text-lg font-semibold text-gray-700 mb-1">Total Users</h3>
+            <p id="totalUsers" class="text-3xl font-bold text-blue-600">0</p>
+          </div>
+        </div>
+        <div class="summary-card bg-green-50 p-6 rounded-lg shadow hover-scale flex items-center">
+          <i class="fas fa-file-invoice text-green-600 text-2xl mr-4"></i>
+          <div>
+            <h3 class="text-lg font-semibold text-gray-700 mb-1">Total Invoices</h3>
+            <p id="totalInvoices" class="text-3xl font-bold text-green-600">0</p>
+          </div>
+        </div>
+        <div class="summary-card bg-indigo-50 p-6 rounded-lg shadow hover-scale flex items-center">
+          <i class="fas fa-dollar-sign text-indigo-600 text-2xl mr-4"></i>
+          <div>
+            <h3 class="text-lg font-semibold text-gray-700 mb-1">Total Revenue</h3>
+            <p id="totalRevenue" class="text-3xl font-bold text-indigo-600">₹0.00</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Users Section -->
+    <section id="usersSection" class="mb-8 fade-in" aria-label="Registered Users">
+      <h2 class="text-2xl font-semibold text-gray-900 mb-4">Registered Users</h2>
+      <div class="overflow-x-auto bg-white rounded-lg shadow">
+        <table class="min-w-full divide-y divide-gray-200" id="usersTable">
+          <thead class="bg-blue-700 text-white">
+            <tr>
+              <th class="px-6 py-3 text-left text-sm font-medium" scope="col">Username</th>
+              <th class="px-6 py-3 text-left text-sm font-medium" scope="col">Status</th>
+              <th class="px-6 py-3 text-left text-sm font-medium" scope="col">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="usersTableBody" class="divide-y divide-gray-200"></tbody>
+        </table>
+        <p id="noUsersMessage" class="hidden text-center p-4 text-gray-600" role="alert">No users found.</p>
+      </div>
+    </section>
+
+    <!-- Invoices Section -->
+    <section id="invoicesSection" class="hidden fade-in" aria-label="Invoice Details">
+      <h2 class="text-2xl font-semibold text-gray-900 mb-4">Invoice Details</h2>
+      <div class="overflow-x-auto bg-white rounded-lg shadow">
+        <table class="min-w-full divide-y divide-gray-200" id="invoiceTable">
+          <thead class="bg-blue-700 text-white">
+            <tr>
+              <th class="px-6 py-3 text-left text-sm font-medium" scope="col">Sl. No</th>
+              <th class="px-6 py-3 text-left text-sm font-medium" scope="col">Date</th>
+              <th class="px-6 py-3 text-left text-sm font-medium" scope="col">Trip Sheet No.</th>
+              <th class="px-6 py-3 text-left text-sm font-medium" scope="col">Vehicle No.</th>
+              <th class="px-6 py-3 text-left text-sm font-medium" scope="col">Opening KM</th>
+              <th class="px-6 py-3 text-left text-sm font-medium" scope="col">Closing KM</th>
+              <th class="px-6 py-3 text-left text-sm font-medium" scope="col">Hours/Day</th>
+              <th class="px-6 py-3 text-left text-sm font-medium" scope="col">Hire Charge (Rs.)</th>
+              <th class="px-6 py-3 text-left text-sm font-medium" scope="col">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="invoiceTableBody" class="divide-y divide-gray-200"></tbody>
+        </table>
+        <p id="noInvoicesMessage" class="hidden text-center p-4 text-gray-600" role="alert">No invoices found.</p>
+      </div>
+    </section>
+
+    <!-- Edit User Modal -->
+    <div id="editUserModal" class="hidden fixed inset-0 flex items-center justify-center modal-bg z-50" aria-labelledby="editUserModalLabel">
+      <div class="bg-white rounded-lg shadow-lg p-6 w-full max-w-md" role="dialog" aria-modal="true">
+        <h3 id="editUserModalLabel" class="text-xl font-semibold mb-4">Edit User</h3>
+        <form id="editUserForm" class="space-y-4">
+          <div>
+            <label for="editUsername" class="block text-sm font-medium text-gray-700 mb-1">Username</label>
+            <input
+              type="text"
+              id="editUsername"
+              name="editUsername"
+              required
+              class="w-full border border-gray-300 rounded-lg px-4 py-3 text-gray-900 placeholder-gray-400 input-focus"
+              placeholder="Enter username"
+              aria-label="Edit Username"
+            />
+          </div>
+          <div>
+            <label for="editPassword" class="block text-sm font-medium text-gray-700 mb-1">Password</label>
+            <input
+              type="password"
+              id="editPassword"
+              name="editPassword"
+              required
+              class="w-full border border-gray-300 rounded-lg px-4 py-3 text-gray-900 placeholder-gray-400 input-focus"
+              placeholder="Enter password"
+              aria-label="Edit Password"
+            />
+          </div>
+          <div class="flex justify-end space-x-4">
+            <button type="button" id="cancelEditUserBtn" class="px-4 py-2 rounded border border-gray-300 hover:bg-gray-100" aria-label="Cancel Edit">Cancel</button>
+            <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition" aria-label="Save Changes">Save</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Edit Invoice Modal -->
+    <div id="editInvoiceModal" class="hidden fixed inset-0 flex items-center justify-center modal-bg z-50" aria-labelledby="editInvoiceModalLabel">
+      <div class="bg-white rounded-lg shadow-lg p-6 w-full max-w-md" role="dialog" aria-modal="true">
+        <h3 id="editInvoiceModalLabel" class="text-xl font-semibold mb-4">Edit Invoice</h3>
+        <form id="editInvoiceForm" class="space-y-4">
+          <div>
+            <label for="editDate" class="block text-sm font-medium text-gray-700 mb-1">Date</label>
+            <input
+              type="date"
+              id="editDate"
+              name="editDate"
+              required
+              class="w-full border border-gray-300 rounded-lg px-4 py-3 text-gray-900 input-focus"
+              aria-label="Edit Date"
+            />
+          </div>
+          <div>
+            <label for="editTripSheetNo" class="block text-sm font-medium text-gray-700 mb-1">Trip Sheet No.</label>
+            <input
+              type="text"
+              id="editTripSheetNo"
+              name="editTripSheetNo"
+              required
+              class="w-full border border-gray-300 rounded-lg px-4 py-3 text-gray-900 placeholder-gray-400 input-focus"
+              placeholder="Enter trip sheet number"
+              aria-label="Edit Trip Sheet Number"
+            />
+          </div>
+          <div>
+            <label for="editVehicleNo" class="block text-sm font-medium text-gray-700 mb-1">Vehicle No.</label>
+            <input
+              type="text"
+              id="editVehicleNo"
+              name="editVehicleNo"
+              required
+              class="w-full border border-gray-300 rounded-lg px-4 py-3 text-gray-900 placeholder-gray-400 input-focus"
+              placeholder="Enter vehicle number"
+              aria-label="Edit Vehicle Number"
+            />
+          </div>
+          <div>
+            <label for="editOpeningKm" class="block text-sm font-medium text-gray-700 mb-1">Opening KM</label>
+            <input
+              type="number"
+              id="editOpeningKm"
+              name="editOpeningKm"
+              min="0"
+              required
+              class="w-full border border-gray-300 rounded-lg px-4 py-3 text-gray-900 input-focus"
+              aria-label="Edit Opening KM"
+            />
+          </div>
+          <div>
+            <label for="editClosingKm" class="block text-sm font-medium text-gray-700 mb-1">Closing KM</label>
+            <input
+              type="number"
+              id="editClosingKm"
+              name="editClosingKm"
+              min="0"
+              required
+              class="w-full border border-gray-300 rounded-lg px-4 py-3 text-gray-900 input-focus"
+              aria-label="Edit Closing KM"
+            />
+          </div>
+          <div>
+            <label for="editHoursDay" class="block text-sm font-medium text-gray-700 mb-1">Hours/Day</label>
+            <input
+              type="number"
+              id="editHoursDay"
+              name="editHoursDay"
+              min="0"
+              step="0.1"
+              required
+              class="w-full border border-gray-300 rounded-lg px-4 py-3 text-gray-900 input-focus"
+              aria-label="Edit Hours/Day"
+            />
+          </div>
+          <div>
+            <label for="editHireCharge" class="block text-sm font-medium text-gray-700 mb-1">Hire Charge (Rs.)</label>
+            <input
+              type="number"
+              id="editHireCharge"
+              name="editHireCharge"
+              min="0"
+              step="0.01"
+              required
+              class="w-full border border-gray-300 rounded-lg px-4 py-3 text-gray-900 input-focus"
+              aria-label="Edit Hire Charge"
+            />
+          </div>
+          <div class="flex justify-end space-x-4">
+            <button type="button" id="cancelEditInvoiceBtn" class="px-4 py-2 rounded border border-gray-300 hover:bg-gray-100" aria-label="Cancel Edit">Cancel</button>
+            <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition" aria-label="Save Changes">Save</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    // Loading state
+    function showLoading(target) {
+      target.innerHTML = '<i class="fas fa-spinner animate-spin"></i> Loading...';
+    }
+
+    // Load users from localStorage
+    function loadUsers() {
+      return JSON.parse(localStorage.getItem('mechavaUsers') || '[]');
+    }
+
+    // Save users to localStorage
+    function saveUsers(users) {
+      localStorage.setItem('mechavaUsers', JSON.stringify(users));
+    }
+
+    // Load invoices from localStorage
+    function loadInvoices() {
+      return JSON.parse(localStorage.getItem('mechavaInvoices') || '[]');
+    }
+
+    // Save invoices to localStorage
+    function saveInvoices(invoices) {
+      localStorage.setItem('mechavaInvoices', JSON.stringify(invoices));
+    }
+
+    // Update summary metrics
+    function updateSummary() {
+      const users = loadUsers();
+      const invoices = loadInvoices();
+      const totalRevenue = invoices.reduce((sum, inv) => sum + parseFloat(inv.hireCharge || 0), 0);
+
+      document.getElementById('totalUsers').textContent = users.length;
+      document.getElementById('totalInvoices').textContent = invoices.length;
+      document.getElementById('totalRevenue').textContent = `₹${totalRevenue.toFixed(2)}`;
+    }
+
+    // Render users table
+    function renderUsers() {
+      const tbody = document.getElementById('usersTableBody');
+      const noUsersMessage = document.getElementById('noUsersMessage');
+      showLoading(tbody);
+      setTimeout(() => {
+        const users = loadUsers();
+        tbody.innerHTML = '';
+        if (users.length === 0) {
+          noUsersMessage.classList.remove('hidden');
+        } else {
+          noUsersMessage.classList.add('hidden');
+          users.forEach((user, index) => {
+            const tr = document.createElement('tr');
+            tr.classList.add(index % 2 === 0 ? 'bg-white' : 'bg-gray-50');
+            tr.innerHTML = `
+              <td class="px-6 py-4 flex items-center">
+                <div class="avatar mr-3"><i class="fas fa-user text-gray-600"></i></div>
+                ${user.username}
+              </td>
+              <td class="px-6 py-4 text-green-600">Active</td>
+              <td class="px-6 py-4 space-x-2">
+                <button class="editUserBtn text-blue-600 hover:text-blue-800 transition" data-index="${index}" aria-label="Edit User">Edit</button>
+                <button class="deleteUserBtn text-red-600 hover:text-red-800 transition" data-index="${index}" aria-label="Delete User">Delete</button>
+              </td>
+            `;
+            tbody.appendChild(tr);
+          });
+        }
+        attachUserActionListeners();
+        updateSummary();
+      }, 500); // Simulate loading delay
+    }
+
+    // Attach user action listeners
+    function attachUserActionListeners() {
+      document.querySelectorAll('.editUserBtn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const index = btn.getAttribute('data-index');
+          openEditUserModal(index);
+        });
+      });
+      document.querySelectorAll('.deleteUserBtn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const index = btn.getAttribute('data-index');
+          deleteUser(index);
+        });
+      });
+    }
+
+    // Open edit user modal
+    function openEditUserModal(index) {
+      const users = loadUsers();
+      const user = users[index];
+      if (!user) return;
+      document.getElementById('editUsername').value = user.username;
+      document.getElementById('editPassword').value = user.password;
+      document.getElementById('editUserForm').setAttribute('data-index', index);
+      document.getElementById('editUserModal').classList.remove('hidden');
+    }
+
+    // Close edit user modal
+    function closeEditUserModal() {
+      document.getElementById('editUserModal').classList.add('hidden');
+      document.getElementById('editUserForm').removeAttribute('data-index');
+    }
+
+    // Delete user by index
+    function deleteUser(index) {
+      if (confirm('Are you sure you want to delete this user?')) {
+        const users = loadUsers();
+        users.splice(index, 1);
+        saveUsers(users);
+        renderUsers();
+        alert('User deleted successfully.');
+      }
+    }
+
+    // Render invoices table
+    function renderInvoices() {
+      const tbody = document.getElementById('invoiceTableBody');
+      const noInvoicesMessage = document.getElementById('noInvoicesMessage');
+      showLoading(tbody);
+      setTimeout(() => {
+        const invoices = loadInvoices();
+        tbody.innerHTML = '';
+        if (invoices.length === 0) {
+          noInvoicesMessage.classList.remove('hidden');
+        } else {
+          noInvoicesMessage.classList.add('hidden');
+          invoices.forEach((inv, index) => {
+            const tr = document.createElement('tr');
+            tr.classList.add(index % 2 === 0 ? 'bg-white' : 'bg-gray-50');
+            tr.innerHTML = `
+              <td class="px-6 py-4 text-gray-900">${index + 1}</td>
+              <td class="px-6 py-4 text-gray-900">${inv.date}</td>
+              <td class="px-6 py-4 text-gray-900">${inv.tripSheetNo}</td>
+              <td class="px-6 py-4 text-gray-900">${inv.vehicleNo}</td>
+              <td class="px-6 py-4 text-gray-900">${inv.openingKm}</td>
+              <td class="px-6 py-4 text-gray-900">${inv.closingKm}</td>
+              <td class="px-6 py-4 text-gray-900">${inv.hoursDay}</td>
+              <td class="px-6 py-4 text-gray-900">${inv.hireCharge.toFixed(2)}</td>
+              <td class="px-6 py-4 space-x-2">
+                <button class="editInvoiceBtn text-blue-600 hover:text-blue-800 transition" data-index="${index}" aria-label="Edit Invoice">Edit</button>
+                <button class="deleteInvoiceBtn text-red-600 hover:text-red-800 transition" data-index="${index}" aria-label="Delete Invoice">Delete</button>
+              </td>
+            `;
+            tbody.appendChild(tr);
+          });
+        }
+        attachInvoiceActionListeners();
+        updateSummary();
+      }, 500); // Simulate loading delay
+    }
+
+    // Attach invoice action listeners
+    function attachInvoiceActionListeners() {
+      document.querySelectorAll('.editInvoiceBtn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const index = btn.getAttribute('data-index');
+          openEditInvoiceModal(index);
+        });
+      });
+      document.querySelectorAll('.deleteInvoiceBtn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const index = btn.getAttribute('data-index');
+          deleteInvoice(index);
+        });
+      });
+    }
+
+    // Open edit invoice modal
+    function openEditInvoiceModal(index) {
+      const invoices = loadInvoices();
+      const inv = invoices[index];
+      if (!inv) return;
+      document.getElementById('editDate').value = inv.date;
+      document.getElementById('editTripSheetNo').value = inv.tripSheetNo;
+      document.getElementById('editVehicleNo').value = inv.vehicleNo;
+      document.getElementById('editOpeningKm').value = inv.openingKm;
+      document.getElementById('editClosingKm').value = inv.closingKm;
+      document.getElementById('editHoursDay').value = inv.hoursDay;
+      document.getElementById('editHireCharge').value = inv.hireCharge.toFixed(2);
+      document.getElementById('editInvoiceForm').setAttribute('data-index', index);
+      document.getElementById('editInvoiceModal').classList.remove('hidden');
+    }
+
+    // Close edit invoice modal
+    function closeEditInvoiceModal() {
+      document.getElementById('editInvoiceModal').classList.add('hidden');
+      document.getElementById('editInvoiceForm').removeAttribute('data-index');
+    }
+
+    // Delete invoice by index
+    function deleteInvoice(index) {
+      if (confirm('Are you sure you want to delete this invoice?')) {
+        const invoices = loadInvoices();
+        invoices.splice(index, 1);
+        saveInvoices(invoices);
+        renderInvoices();
+        alert('Invoice deleted successfully.');
+      }
+    }
+
+    // Logout function
+    function logout() {
+      sessionStorage.removeItem('mechavaUserRole');
+      sessionStorage.removeItem('mechavaUsername');
+      window.location.href = 'admin_login.html';
+    }
+
+    // Check if user is admin
+    function checkAdmin() {
+      const role = sessionStorage.getItem('mechavaUserRole');
+      if (role !== 'admin') {
+        alert('Access denied. Admins only.');
+        window.location.href = 'admin_login.html';
+      }
+    }
+
+    // Show section
+    function showSection(sectionId) {
+      document.querySelectorAll('main section').forEach(section => {
+        section.classList.add('hidden');
+      });
+      const targetSection = document.getElementById(sectionId);
+      targetSection.classList.remove('hidden');
+      const elements = targetSection.querySelectorAll('.fade-in');
+      elements.forEach(el => {
+        el.classList.remove('visible');
+        setTimeout(() => el.classList.add('visible'), 10);
+      });
+      if (window.innerWidth < 768) {
+        document.querySelector('.sidebar').classList.add('sidebar-hidden');
+      }
+    }
+
+    // Initialize dashboard
+    function init() {
+      checkAdmin();
+      renderUsers();
+      renderInvoices();
+      showSection('usersSection');
+
+      // Sidebar navigation
+      document.getElementById('usersSectionBtn').addEventListener('click', () => showSection('usersSection'));
+      document.getElementById('invoicesSectionBtn').addEventListener('click', () => showSection('invoicesSection'));
+      document.getElementById('logoutBtn').addEventListener('click', logout);
+
+      // Mobile sidebar toggle
+      document.getElementById('sidebarToggle').addEventListener('click', () => {
+        document.querySelector('.sidebar').classList.toggle('sidebar-hidden');
+      });
+
+      // Profile dropdown
+      const profileBtn = document.getElementById('profileBtn');
+      const profileDropdown = document.getElementById('profileDropdown');
+      profileBtn.addEventListener('click', () => {
+        profileDropdown.classList.toggle('hidden');
+      });
+      document.addEventListener('click', (e) => {
+        if (!profileBtn.contains(e.target) && !profileDropdown.contains(e.target)) {
+          profileDropdown.classList.add('hidden');
+        }
+      });
+
+      // Edit user form submit
+      document.getElementById('editUserForm').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const index = e.target.getAttribute('data-index');
+        if (index === null) return;
+        const users = loadUsers();
+        const newUsername = document.getElementById('editUsername').value.trim();
+        const newPassword = document.getElementById('editPassword').value;
+
+        if (newUsername.toLowerCase() === 'preetha') {
+          alert('Cannot use reserved username "Preetha".');
+          return;
+        }
+        if (users.some((user, i) => i != index && user.username.toLowerCase() === newUsername.toLowerCase())) {
+          alert('Username already exists.');
+          return;
+        }
+
+        users[index] = { username: newUsername, password: newPassword };
+        saveUsers(users);
+        renderUsers();
+        closeEditUserModal();
+        alert('User updated successfully.');
+      });
+
+      // Edit invoice form submit
+      document.getElementById('editInvoiceForm').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const index = e.target.getAttribute('data-index');
+        if (index === null) return;
+        const invoices = loadInvoices();
+        const openingKm = parseFloat(document.getElementById('editOpeningKm').value);
+        const closingKm = parseFloat(document.getElementById('editClosingKm').value);
+
+        if (closingKm < openingKm) {
+          alert('Closing KM cannot be less than Opening KM.');
+          return;
+        }
+
+        invoices[index] = {
+          date: document.getElementById('editDate').value,
+          tripSheetNo: document.getElementById('editTripSheetNo').value.trim(),
+          vehicleNo: document.getElementById('editVehicleNo').value.trim(),
+          openingKm: openingKm,
+          closingKm: closingKm,
+          hoursDay: parseFloat(document.getElementById('editHoursDay').value),
+          hireCharge: parseFloat(document.getElementById('editHireCharge').value)
+        };
+        saveInvoices(invoices);
+        renderInvoices();
+        closeEditInvoiceModal();
+        alert('Invoice updated successfully.');
+      });
+
+      // Modal cancel buttons
+      document.getElementById('cancelEditUserBtn').addEventListener('click', closeEditUserModal);
+      document.getElementById('cancelEditInvoiceBtn').addEventListener('click', closeEditInvoiceModal);
+
+      // Fade-in animation on load
+      const elements = document.querySelectorAll('.fade-in');
+      elements.forEach(element => {
+        element.classList.add('visible');
+      });
+    }
+
+    window.addEventListener('DOMContentLoaded', init);
+  </script>
+</body>
+</html>
