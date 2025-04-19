@@ -111,7 +111,10 @@
           <label for="extraKmRate" class="block font-medium mb-1">Extra KM Rate (Rs./km)</label>
           <input type="number" id="extraKmRate" name="extraKmRate" min="0" step="0.1" required class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" />
         </div>
-        <button type="submit" class="bg-blue-700 text-white px-6 py-2 rounded hover:bg-blue-800 transition">Save Conditions</button>
+        <div class="flex justify-end space-x-4">
+          <button type="submit" class="bg-blue-700 text-white px-6 py-2 rounded hover:bg-blue-800 transition">Save Conditions</button>
+          <button type="button" id="cancelBtn" class="bg-gray-500 text-white px-6 py-2 rounded hover:bg-gray-600 transition">Cancel</button>
+        </div>
       </form>
     </section>
   </main>
@@ -155,8 +158,33 @@
 
     // Handle Admin Page Button Click
     document.getElementById('adminPageBtn').addEventListener('click', () => {
-      document.getElementById("adminPage").classList.remove("hidden");
-    })
+      document.getElementById('userPage').classList.add('hidden');
+      document.getElementById('adminPage').classList.remove('hidden');
+    });
+
+    // Handle Save Conditions and Return to User Page
+    document.getElementById('adminForm').addEventListener('submit', (e) => {
+      e.preventDefault();
+
+      const conditions = {
+        basicHours: parseFloat(document.getElementById('basicHours').value),
+        basicKm: parseFloat(document.getElementById('basicKm').value),
+        basicCharge: parseFloat(document.getElementById('basicCharge').value),
+        extraHourRate: parseFloat(document.getElementById('extraHourRate').value),
+        extraKmRate: parseFloat(document.getElementById('extraKmRate').value)
+      };
+      saveConditions(conditions);
+      alert('Conditions saved successfully!');
+
+      document.getElementById('adminPage').classList.add('hidden');
+      document.getElementById('userPage').classList.remove('hidden');
+    });
+
+    // Handle Cancel Button and Return to User Page
+    document.getElementById('cancelBtn').addEventListener('click', () => {
+      document.getElementById('adminPage').classList.add('hidden');
+      document.getElementById('userPage').classList.remove('hidden');
+    });
 
     // Initialize the page
     document.addEventListener('DOMContentLoaded', () => {

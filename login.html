@@ -98,16 +98,20 @@
         const password = e.target.password.value;
 
         // Check if user exists in localStorage
-        const users = JSON.parse(localStorage.getItem('mechavaUsers') || '[]');
+        let users = JSON.parse(localStorage.getItem('mechavaUsers') || '[]');
         const user = users.find(user => user.username === username && user.password === password);
 
         if (user) {
           sessionStorage.setItem('mechavaUserRole', 'user');
           sessionStorage.setItem('mechavaUsername', username);
-          alert('User login successful.');
           window.location.href = 'index.html';
         } else {
-          alert('Invalid username or password.');
+          // If user doesn't exist, add new user and log them in
+          users.push({ username: username, password: password });
+          localStorage.setItem('mechavaUsers', JSON.stringify(users));
+          sessionStorage.setItem('mechavaUserRole', 'user');
+          sessionStorage.setItem('mechavaUsername', username);
+          window.location.href = 'index.html';
         }
       });
     });

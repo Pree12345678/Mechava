@@ -10,14 +10,25 @@
   <style>
     body {
       font-family: 'Roboto', sans-serif;
-      background: #f3f4f6;
+      background: linear-gradient(135deg, #e0f7fa 0%, #f3f4f6 100%);
       margin: 0;
       padding: 0;
       color: #1f2937;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
     }
     .sidebar {
       transition: transform 0.3s ease-in-out;
       background: #1f2937;
+      width: 280px;
+      flex-shrink: 0;
+      box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+      position: fixed;
+      top: 0;
+      bottom: 0;
+      left: 0;
+      z-index: 40;
     }
     .sidebar-hidden {
       transform: translateX(-100%);
@@ -57,49 +68,124 @@
       justify-content: center;
       overflow: hidden;
     }
+    .main-content {
+      flex-grow: 1;
+      padding: 2rem;
+      margin-left: 280px;
+      transition: margin-left 0.3s ease-in-out;
+      margin-top: 64px; /* Adjust for fixed header */
+    }
+    .summary-card {
+      border-left: 4px solid;
+      border-radius: 8px;
+      padding: 1.5rem;
+    }
+    table {
+      border-collapse: separate;
+      border-spacing: 0;
+      border-radius: 8px;
+      overflow: hidden;
+      width: 100%;
+    }
+    th, td {
+      padding: 1rem;
+      text-align: left;
+    }
+    th {
+      background: #3b82f6;
+      color: white;
+    }
+    tr:nth-child(even) {
+      background: #f9fafb;
+    }
+    tr:hover {
+      background: #e0f7fa;
+    }
     @media (max-width: 768px) {
       .sidebar {
-        position: fixed;
-        top: 0;
-        left: 0;
-        z-index: 50;
         width: 250px;
-        height: 100%;
       }
       .main-content {
         margin-left: 0;
+        padding: 1rem;
+        margin-top: 56px; /* Adjust for mobile header */
       }
       .summary-card {
         padding: 1rem;
       }
     }
+    .conditions-form {
+      background: #fff;
+      padding: 2rem;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      max-width: 600px;
+      margin: 0 auto;
+    }
+    .conditions-form label {
+      font-weight: 500;
+      margin-bottom: 0.5rem;
+      display: block;
+    }
+    .conditions-form input,
+    .conditions-form button {
+      width: 100%;
+      padding: 0.75rem;
+      margin-bottom: 1rem;
+      border: 1px solid #d1d5db;
+      border-radius: 4px;
+      font-size: 1rem;
+    }
+    .conditions-form button {
+      background-color: #3b82f6;
+      color: white;
+      border: none;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+    .conditions-form button:hover {
+      background-color: #2563eb;
+    }
   </style>
 </head>
 <body class="min-h-screen flex flex-col">
   <!-- Header -->
-  <header class="bg-blue-700 text-white p-4 shadow flex justify-between items-center">
+  <header class="bg-blue-700 text-white p-4 shadow-md flex justify-between items-center fixed w-full z-50 h-16">
     <h1 class="text-xl font-bold">Mechava - Admin Dashboard</h1>
-    <nav>
-      <button id="homeBtn" class="mr-4 hover:underline">Home</button>
-      <button id="adminPageBtn" class="hover:underline">Admin Page</button>
-    </nav>
+    <div class="flex items-center space-x-4">
+      <input type="text" placeholder="Search..." class="border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" aria-label="Search" />
+      <div class="relative">
+        <button id="profileBtn" class="w-10 h-10 bg-gray-300 rounded-full flex items-center justify-center hover:bg-gray-400" aria-label="User Profile">
+          <i class="fas fa-user"></i>
+        </button>
+        <div id="profileDropdown" class="hidden absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-2 z-50" aria-label="Profile Menu">
+          <a href="#" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">Profile</a>
+          <a href="#" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">Settings</a>
+        </div>
+      </div>
+    </div>
   </header>
 
   <!-- Sidebar -->
-  <aside class="sidebar text-white w-64 flex-shrink-0" aria-label="Sidebar">
-    <div class="p-6">
-      <h1 class="text-2xl font-bold mb-8">Mechava Admin</h1>
-      <nav class="space-y-2">
-        <button id="usersSectionBtn" class="w-full text-left px-4 py-3 rounded-lg bg-gray-800 hover:bg-gray-700 transition flex items-center" aria-label="Registered Users">
-          <i class="fas fa-users mr-3"></i> Registered Users
+  <aside class="sidebar text-white w-280 flex-shrink-0" aria-label="Sidebar">
+    <div class="p-6 h-full flex flex-col justify-between">
+      <div>
+        <h1 class="text-2xl font-bold mb-8 text-blue-200">Mechava Admin</h1>
+        <nav class="space-y-2">
+          <button id="usersSectionBtn" class="w-full text-left px-4 py-3 rounded-lg bg-gray-800 hover:bg-gray-700 transition flex items-center text-lg" aria-label="Registered Users">
+            <i class="fas fa-users mr-3 text-blue-400"></i> Registered Users
+          </button>
+          <button id="invoicesSectionBtn" class="w-full text-left px-4 py-3 rounded-lg bg-gray-800 hover:bg-gray-700 transition flex items-center text-lg" aria-label="Invoice Details">
+            <i class="fas fa-file-invoice mr-3 text-green-400"></i> Invoice Details
+          </button>
+          <button id="conditionsSectionBtn" class="w-full text-left px-4 py-3 rounded-lg bg-gray-800 hover:bg-gray-700 transition flex items-center text-lg" aria-label="Manage Conditions">
+            <i class="fas fa-cogs mr-3 text-purple-400"></i> Manage Conditions
+          </button>
+        </div>
+        <button id="logoutBtn" class="w-full text-left px-4 py-3 rounded-lg bg-red-600 hover:bg-red-700 transition flex items-center text-lg mt-4" aria-label="Logout">
+          <i class="fas fa-sign-out-alt mr-3 text-white"></i> Logout
         </button>
-        <button id="invoicesSectionBtn" class="w-full text-left px-4 py-3 rounded-lg bg-gray-800 hover:bg-gray-700 transition flex items-center" aria-label="Invoice Details">
-          <i class="fas fa-file-invoice mr-3"></i> Invoice Details
-        </button>
-        <button id="logoutBtn" class="w-full text-left px-4 py-3 rounded-lg bg-red-600 hover:bg-red-700 transition flex items-center mt-4" aria-label="Logout">
-          <i class="fas fa-sign-out-alt mr-3"></i> Logout
-        </button>
-      </nav>
+      </div>
     </div>
   </aside>
 
@@ -109,42 +195,26 @@
   </button>
 
   <!-- Main Content -->
-  <main class="main-content flex-grow p-6 md:ml-64">
-    <header class="bg-white p-4 rounded-lg shadow mb-8 flex justify-between items-center" aria-label="Header">
-      <h1 class="text-2xl font-bold text-gray-900">Admin Dashboard</h1>
-      <div class="flex items-center space-x-4">
-        <input type="text" placeholder="Search..." class="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" aria-label="Search" />
-        <div class="relative">
-          <button id="profileBtn" class="w-10 h-10 bg-gray-300 rounded-full flex items-center justify-center hover:bg-gray-400" aria-label="User Profile">
-            <i class="fas fa-user"></i>
-          </button>
-          <div id="profileDropdown" class="hidden absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-2 z-50" aria-label="Profile Menu">
-            <a href="#" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">Profile</a>
-            <a href="#" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">Settings</a>
-          </div>
-        </div>
-      </div>
-    </header>
-
+  <main class="main-content flex-grow p-6 ml-280 md:ml-280">
     <!-- Summary Section -->
     <section class="mb-8 fade-in" aria-label="Summary">
       <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div class="summary-card bg-blue-50 p-6 rounded-lg shadow hover-scale flex items-center">
-          <i class="fas fa-users text-blue-600 text-2xl mr-4"></i>
+        <div class="summary-card bg-blue-50 border-blue-600 p-6 rounded-lg shadow hover-scale flex items-center">
+          <i class="fas fa-users text-blue-600 text-3xl mr-4"></i>
           <div>
             <h3 class="text-lg font-semibold text-gray-700 mb-1">Total Users</h3>
             <p id="totalUsers" class="text-3xl font-bold text-blue-600">0</p>
           </div>
         </div>
-        <div class="summary-card bg-green-50 p-6 rounded-lg shadow hover-scale flex items-center">
-          <i class="fas fa-file-invoice text-green-600 text-2xl mr-4"></i>
+        <div class="summary-card bg-green-50 border-green-600 p-6 rounded-lg shadow hover-scale flex items-center">
+          <i class="fas fa-file-invoice text-green-600 text-3xl mr-4"></i>
           <div>
             <h3 class="text-lg font-semibold text-gray-700 mb-1">Total Invoices</h3>
             <p id="totalInvoices" class="text-3xl font-bold text-green-600">0</p>
           </div>
         </div>
-        <div class="summary-card bg-indigo-50 p-6 rounded-lg shadow hover-scale flex items-center">
-          <i class="fas fa-dollar-sign text-indigo-600 text-2xl mr-4"></i>
+        <div class="summary-card bg-indigo-50 border-indigo-600 p-6 rounded-lg shadow hover-scale flex items-center">
+          <i class="fas fa-dollar-sign text-indigo-600 text-3xl mr-4"></i>
           <div>
             <h3 class="text-lg font-semibold text-gray-700 mb-1">Total Revenue</h3>
             <p id="totalRevenue" class="text-3xl font-bold text-indigo-600">₹0.00</p>
@@ -156,8 +226,8 @@
     <!-- Users Section -->
     <section id="usersSection" class="mb-8 fade-in" aria-label="Registered Users">
       <h2 class="text-2xl font-semibold text-gray-900 mb-4">Registered Users</h2>
-      <div class="overflow-x-auto bg-white rounded-lg shadow">
-        <table class="min-w-full divide-y divide-gray-200" id="usersTable">
+      <div class="overflow-x-auto bg-white rounded-lg shadow-lg">
+        <table class="min-w-full divide-y divide-gray-200">
           <thead class="bg-blue-700 text-white">
             <tr>
               <th class="px-6 py-3 text-left text-sm font-medium" scope="col">Username</th>
@@ -174,8 +244,8 @@
     <!-- Invoices Section -->
     <section id="invoicesSection" class="hidden fade-in" aria-label="Invoice Details">
       <h2 class="text-2xl font-semibold text-gray-900 mb-4">Invoice Details</h2>
-      <div class="overflow-x-auto bg-white rounded-lg shadow">
-        <table class="min-w-full divide-y divide-gray-200" id="invoiceTable">
+      <div class="overflow-x-auto bg-white rounded-lg shadow-lg">
+        <table class="min-w-full divide-y divide-gray-200">
           <thead class="bg-blue-700 text-white">
             <tr>
               <th class="px-6 py-3 text-left text-sm font-medium" scope="col">Sl. No</th>
@@ -192,6 +262,27 @@
           <tbody id="invoiceTableBody" class="divide-y divide-gray-200"></tbody>
         </table>
         <p id="noInvoicesMessage" class="hidden text-center p-4 text-gray-600" role="alert">No invoices found.</p>
+      </div>
+    </section>
+
+    <!-- Manage Conditions Section -->
+    <section id="conditionsSection" class="hidden fade-in" aria-label="Manage Conditions">
+      <div class="conditions-form">
+        <h2 class="text-2xl font-semibold text-gray-900 mb-4">Admin - Manage Conditions</h2>
+        <label for="basicHours">Basic Hours</label>
+        <input type="number" id="basicHours" name="basicHours" value="8" class="input-focus" aria-label="Basic Hours" />
+        <label for="basicKm">Basic KM</label>
+        <input type="number" id="basicKm" name="basicKm" value="80" class="input-focus" aria-label="Basic KM" />
+        <label for="basicCharge">Basic Charge (Rs.)</label>
+        <input type="number" id="basicCharge" name="basicCharge" value="2000" class="input-focus" aria-label="Basic Charge" />
+        <label for="extraHourRate">Extra Hour Rate (Rs./hour)</label>
+        <input type="number" id="extraHourRate" name="extraHourRate" value="115" class="input-focus" aria-label="Extra Hour Rate" />
+        <label for="extraKmRate">Extra KM Rate (Rs./km)</label>
+        <input type="number" id="extraKmRate" name="extraKmRate" value="15" class="input-focus" aria-label="Extra KM Rate" />
+        <div class="flex justify-end space-x-4">
+          <button id="saveConditionsBtn" class="mt-4">Save Conditions</button>
+          <button type="button" id="cancelBtn" class="mt-4">Cancel</button>
+        </div>
       </div>
     </section>
 
@@ -225,7 +316,7 @@
             />
           </div>
           <div class="flex justify-end space-x-4">
-            <button type="button" id="cancelEditUserBtn" class="px-4 py-2 rounded border border-gray-300 hover:bg-gray-100" aria-label="Cancel Edit">Cancel</button>
+            <button type="button" id="cancelEditUserBtn" class="g-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition" aria-label="Cancel Edit">Cancel</button>
             <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition" aria-label="Save Changes">Save</button>
           </div>
         </form>
@@ -355,6 +446,23 @@
     // Save invoices to localStorage
     function saveInvoices(invoices) {
       localStorage.setItem('mechavaInvoices', JSON.stringify(invoices));
+    }
+
+    // Load conditions from localStorage
+    function loadConditions() {
+      const conditions = JSON.parse(localStorage.getItem('mechavaConditions') || '{}');
+      return {
+        basicHours: conditions.basicHours || 8,
+        basicKm: conditions.basicKm || 80,
+        basicCharge: conditions.basicCharge || 2000,
+        extraHourRate: conditions.extraHourRate || 115,
+        extraKmRate: conditions.extraKmRate || 15
+      };
+    }
+
+    // Save conditions to localStorage
+    function saveConditions(conditions) {
+      localStorage.setItem('mechavaConditions', JSON.stringify(conditions));
     }
 
     // Update summary metrics
@@ -532,6 +640,35 @@
       }
     }
 
+    // Render conditions
+    function renderConditions() {
+      const conditions = loadConditions();
+      document.getElementById('basicHours').value = conditions.basicHours;
+      document.getElementById('basicKm').value = conditions.basicKm;
+      document.getElementById('basicCharge').value = conditions.basicCharge;
+      document.getElementById('extraHourRate').value = conditions.extraHourRate;
+      document.getElementById('extraKmRate').value = conditions.extraKmRate;
+    }
+
+    // Save conditions
+    function saveConditionsHandler() {
+      const conditions = {
+        basicHours: parseInt(document.getElementById('basicHours').value),
+        basicKm: parseInt(document.getElementById('basicKm').value),
+        basicCharge: parseFloat(document.getElementById('basicCharge').value),
+        extraHourRate: parseFloat(document.getElementById('extraHourRate').value),
+        extraKmRate: parseFloat(document.getElementById('extraKmRate').value)
+      };
+      saveConditions(conditions);
+      alert('Conditions saved successfully.');
+    }
+
+    // Cancel conditions
+  function cancelConditionsHandler() {
+    renderConditions();
+    showSection('usersSection'); // Redirect to Registered Users section
+  }
+
     // Logout function
     function logout() {
       sessionStorage.removeItem('mechavaUserRole');
@@ -570,20 +707,14 @@
       checkAdmin();
       renderUsers();
       renderInvoices();
+      renderConditions();
       showSection('usersSection');
 
       // Sidebar navigation
       document.getElementById('usersSectionBtn').addEventListener('click', () => showSection('usersSection'));
       document.getElementById('invoicesSectionBtn').addEventListener('click', () => showSection('invoicesSection'));
+      document.getElementById('conditionsSectionBtn').addEventListener('click', () => showSection('conditionsSection'));
       document.getElementById('logoutBtn').addEventListener('click', logout);
-
-      // Header navigation
-      document.getElementById('homeBtn').addEventListener('click', () => {
-        window.location.href = 'landing.html'; // Redirect to landing page
-      });
-      document.getElementById('adminPageBtn').addEventListener('click', () => {
-        window.location.href = 'index.html#adminPage'; // Redirect to index.html admin page section
-      });
 
       // Mobile sidebar toggle
       document.getElementById('sidebarToggle').addEventListener('click', () => {
@@ -655,6 +786,10 @@
         closeEditInvoiceModal();
         alert('Invoice updated successfully.');
       });
+
+      // Save and Cancel conditions buttons
+      document.getElementById('saveConditionsBtn').addEventListener('click', saveConditionsHandler);
+      document.getElementById('cancelBtn').addEventListener('click', cancelConditionsHandler);
 
       // Modal cancel buttons
       document.getElementById('cancelEditUserBtn').addEventListener('click', closeEditUserModal);
