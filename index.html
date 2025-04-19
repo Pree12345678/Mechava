@@ -20,7 +20,7 @@
   <header class="bg-blue-700 text-white p-4 shadow flex justify-between items-center">
     <h1 class="text-xl font-bold">Mechava - Car Invoice App</h1>
     <nav>
-      <button id="userPageBtn" class="mr-4 hover:underline">User Page</button>
+      <button id="homeBtn" class="mr-4 hover:underline">Home</button>
       <button id="adminPageBtn" class="hover:underline">Admin Page</button>
     </nav>
   </header>
@@ -148,16 +148,15 @@
       localStorage.setItem('mechavaInvoices', JSON.stringify(invoices));
     }
 
-    // Function to switch between user and admin pages
-    document.getElementById("userPageBtn").addEventListener("click", () => {
-      document.getElementById("userPage").classList.remove("hidden");
-      document.getElementById("adminPage").classList.add("hidden");
+    // Handle Home Button Click (Redirect to Landing Page)
+    document.getElementById('homeBtn').addEventListener('click', () => {
+      window.location.href = 'landing.html'; // Redirect to your desired home/landing page
     });
 
-    document.getElementById("adminPageBtn").addEventListener("click", () => {
-      document.getElementById("userPage").classList.add("hidden");
+    // Handle Admin Page Button Click
+    document.getElementById('adminPageBtn').addEventListener('click', () => {
       document.getElementById("adminPage").classList.remove("hidden");
-    });
+    })
 
     // Initialize the page
     document.addEventListener('DOMContentLoaded', () => {
