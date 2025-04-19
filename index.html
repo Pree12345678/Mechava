@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -14,6 +15,7 @@
     }
   </style>
 </head>
+
 <body class="bg-gray-100 min-h-screen flex flex-col">
   <header class="bg-blue-700 text-white p-4 shadow flex justify-between items-center">
     <h1 class="text-xl font-bold">Mechava - Car Invoice App</h1>
@@ -123,239 +125,111 @@
       extraHourRate: 115,
       extraKmRate: 15
     };
-  
+
     // Load conditions from localStorage or use default
     function loadConditions() {
       const cond = localStorage.getItem('mechavaConditions');
       return cond ? JSON.parse(cond) : defaultConditions;
     }
-  
+
     // Save conditions to localStorage
     function saveConditions(conditions) {
       localStorage.setItem('mechavaConditions', JSON.stringify(conditions));
     }
-  
+
     // Load invoices from localStorage
     function loadInvoices() {
       const inv = localStorage.getItem('mechavaInvoices');
       return inv ? JSON.parse(inv) : [];
     }
-  
+
     // Save invoices to localStorage
     function saveInvoices(invoices) {
       localStorage.setItem('mechavaInvoices', JSON.stringify(invoices));
     }
-  
-    // Calculate hire charge based on conditions and input
-    function calculateHireCharge(openingKm, closingKm, hoursDay, conditions) {
-      const distance = closingKm - openingKm;
-      if (distance < 0) return 0; // invalid input
-      let charge = conditions.basicCharge;
-      const extraHours = Math.max(0, hoursDay - conditions.basicHours);
-      const extraKms = Math.max(0, distance - conditions.basicKm);
-      charge += extraHours * conditions.extraHourRate;
-      charge += extraKms * conditions.extraKmRate;
-      return charge;
-    }
-  
-    // Render invoices table
-    function renderInvoices() {
+
+    // Function to switch between user and admin pages
+    document.getElementById("userPageBtn").addEventListener("click", () => {
+      document.getElementById("userPage").classList.remove("hidden");
+      document.getElementById("adminPage").classList.add("hidden");
+    });
+
+    document.getElementById("adminPageBtn").addEventListener("click", () => {
+      document.getElementById("userPage").classList.add("hidden");
+      document.getElementById("adminPage").classList.remove("hidden");
+    });
+
+    // Initialize the page
+    document.addEventListener('DOMContentLoaded', () => {
       const invoices = loadInvoices();
-      const tbody = document.getElementById('invoiceTableBody');
-      tbody.innerHTML = '';
-      invoices.forEach((inv, index) => {
-        const tr = document.createElement('tr');
-        tr.classList.add(index % 2 === 0 ? 'bg-white' : 'bg-gray-50');
-        tr.innerHTML = `
+      const conditions = loadConditions();
+
+      // Update UI with saved conditions
+      document.getElementById('basicHours').value = conditions.basicHours;
+      document.getElementById('basicKm').value = conditions.basicKm;
+      document.getElementById('basicCharge').value = conditions.basicCharge;
+      document.getElementById('extraHourRate').value = conditions.extraHourRate;
+      document.getElementById('extraKmRate').value = conditions.extraKmRate;
+
+      // Display invoices in the table
+      const tableBody = document.getElementById('invoiceTableBody');
+      invoices.forEach((invoice, index) => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
           <td class="px-4 py-2">${index + 1}</td>
-          <td class="px-4 py-2">${inv.date}</td>
-          <td class="px-4 py-2">${inv.tripSheetNo}</td>
-          <td class="px-4 py-2">${inv.vehicleNo}</td>
-          <td class="px-4 py-2">${inv.openingKm}</td>
-          <td class="px-4 py-2">${inv.closingKm}</td>
-          <td class="px-4 py-2">${inv.hoursDay}</td>
-          <td class="px-4 py-2">${inv.hireCharge.toFixed(2)}</td>
-          <td class="px-4 py-2 space-x-2 flex">
-            <button class="editBtn text-blue-600 hover:underline" data-index="${index}">Edit</button>
-            <button class="deleteBtn text-red-600 hover:underline" data-index="${index}">Delete</button>
-          </td>
+          <td class="px-4 py-2">${invoice.date}</td>
+          <td class="px-4 py-2">${invoice.tripSheetNo}</td>
+          <td class="px-4 py-2">${invoice.vehicleNo}</td>
+          <td class="px-4 py-2">${invoice.openingKm}</td>
+          <td class="px-4 py-2">${invoice.closingKm}</td>
+          <td class="px-4 py-2">${invoice.hoursDay}</td>
+          <td class="px-4 py-2">${invoice.hireCharge}</td>
+          <td class="px-4 py-2"><button class="text-red-500" onclick="deleteInvoice(${index})">Delete</button></td>
         `;
-        tbody.appendChild(tr);
+        tableBody.appendChild(row);
       });
-  
-      // Attach event listeners to Edit and Delete buttons
-      document.querySelectorAll('.editBtn').forEach(button => {
-        button.addEventListener('click', (e) => {
-          const index = e.target.dataset.index;
-          editInvoice(index);
-        });
-      });
-  
-      document.querySelectorAll('.deleteBtn').forEach(button => {
-        button.addEventListener('click', (e) => {
-          const index = e.target.dataset.index;
-          deleteInvoice(index);
-        });
-      });
-    }
-  
-    // Edit invoice
-    function editInvoice(index) {
+    });
+
+    // Handle form submission for user page
+    document.getElementById('invoiceForm').addEventListener('submit', (e) => {
+      e.preventDefault();
+
+      const conditions = loadConditions();
+      const date = document.getElementById('date').value;
+      const tripSheetNo = document.getElementById('tripSheetNo').value;
+      const vehicleNo = document.getElementById('vehicleNo').value;
+      const openingKm = parseFloat(document.getElementById('openingKm').value);
+      const closingKm = parseFloat(document.getElementById('closingKm').value);
+      const hoursDay = parseFloat(document.getElementById('hoursDay').value);
+
+      const extraKm = closingKm - openingKm - conditions.basicKm;
+      const extraHours = hoursDay - conditions.basicHours;
+
+      const hireCharge = conditions.basicCharge + (extraKm > 0 ? extraKm * conditions.extraKmRate : 0) + (extraHours > 0 ? extraHours * conditions.extraHourRate : 0);
+
       const invoices = loadInvoices();
-      const invoice = invoices[index];
-  
-      // Pre-fill the form with the existing data
-      document.getElementById('date').value = invoice.date;
-      document.getElementById('tripSheetNo').value = invoice.tripSheetNo;
-      document.getElementById('vehicleNo').value = invoice.vehicleNo;
-      document.getElementById('openingKm').value = invoice.openingKm;
-      document.getElementById('closingKm').value = invoice.closingKm;
-      document.getElementById('hoursDay').value = invoice.hoursDay;
-  
-      // Remove the existing entry and set up the form for editing
-      document.getElementById('invoiceForm').onsubmit = (e) => {
-        e.preventDefault();
-  
-        // Update the invoice
-        const updatedInvoice = {
-          date: e.target.date.value,
-          tripSheetNo: e.target.tripSheetNo.value.trim(),
-          vehicleNo: e.target.vehicleNo.value.trim(),
-          openingKm: parseFloat(e.target.openingKm.value),
-          closingKm: parseFloat(e.target.closingKm.value),
-          hoursDay: parseFloat(e.target.hoursDay.value),
-          hireCharge: calculateHireCharge(
-            parseFloat(e.target.openingKm.value),
-            parseFloat(e.target.closingKm.value),
-            parseFloat(e.target.hoursDay.value),
-            loadConditions()
-          )
-        };
-  
-        // Update the invoice in the array
-        invoices[index] = updatedInvoice;
-        saveInvoices(invoices);
-        renderInvoices();
-        document.getElementById('invoiceForm').reset();
-      };
-    }
-  
+      invoices.push({ date, tripSheetNo, vehicleNo, openingKm, closingKm, hoursDay, hireCharge });
+      saveInvoices(invoices);
+
+      alert('Invoice Added Successfully!');
+      window.location.reload();
+    });
+
+    // Export to Excel
+    document.getElementById('exportExcelBtn').addEventListener('click', () => {
+      const table = document.getElementById('invoiceTable');
+      const wb = XLSX.utils.table_to_book(table, { sheet: 'Invoices' });
+      XLSX.writeFile(wb, 'invoices.xlsx');
+    });
+
     // Delete invoice
     function deleteInvoice(index) {
       const invoices = loadInvoices();
-      invoices.splice(index, 1); // Remove the invoice
+      invoices.splice(index, 1);
       saveInvoices(invoices);
-      renderInvoices();
+      window.location.reload();
     }
-  
-    // Export table data to Excel
-    function exportToExcel() {
-      const invoices = loadInvoices();
-      if (invoices.length === 0) {
-        alert('No invoice data to export.');
-        return;
-      }
-      const wsData = [
-        ['Sl. No', 'Date', 'Trip Sheet No.', 'Vehicle No.', 'Opening KM', 'Closing KM', 'Hours/Day', 'Hire Charge (Rs.)']
-      ];
-      invoices.forEach((inv, index) => {
-        wsData.push([
-          index + 1,
-          inv.date,
-          inv.tripSheetNo,
-          inv.vehicleNo,
-          inv.openingKm,
-          inv.closingKm,
-          inv.hoursDay,
-          inv.hireCharge.toFixed(2)
-        ]);
-      });
-      const ws = XLSX.utils.aoa_to_sheet(wsData);
-      const wb = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(wb, ws, 'Invoices');
-      XLSX.writeFile(wb, 'Mechava_Invoices.xlsx');
-    }
-  
-    // Show user page and hide admin page
-    function showUserPage() {
-      document.getElementById('userPage').classList.remove('hidden');
-      document.getElementById('adminPage').classList.add('hidden');
-    }
-  
-    // Show admin page and hide user page
-    function showAdminPage() {
-      document.getElementById('adminPage').classList.remove('hidden');
-      document.getElementById('userPage').classList.add('hidden');
-      loadAdminForm();
-    }
-  
-    // Load admin form with current conditions
-    function loadAdminForm() {
-      const cond = loadConditions();
-      document.getElementById('basicHours').value = cond.basicHours;
-      document.getElementById('basicKm').value = cond.basicKm;
-      document.getElementById('basicCharge').value = cond.basicCharge;
-      document.getElementById('extraHourRate').value = cond.extraHourRate;
-      document.getElementById('extraKmRate').value = cond.extraKmRate;
-    }
-  
-    // Initialize app
-    function init() {
-      renderInvoices();
-      showUserPage();
-  
-      // Navigation buttons
-      document.getElementById('userPageBtn').addEventListener('click', showUserPage);
-      document.getElementById('adminPageBtn').addEventListener('click', showAdminPage);
-  
-      // Invoice form submit
-      document.getElementById('invoiceForm').addEventListener('submit', (e) => {
-        e.preventDefault();
-        const form = e.target;
-        const date = form.date.value;
-        const tripSheetNo = form.tripSheetNo.value.trim();
-        const vehicleNo = form.vehicleNo.value.trim();
-        const openingKm = parseFloat(form.openingKm.value);
-        const closingKm = parseFloat(form.closingKm.value);
-        const hoursDay = parseFloat(form.hoursDay.value);
-  
-        if (closingKm < openingKm) {
-          alert('Closing KM cannot be less than Opening KM.');
-          return;
-        }
-  
-        const conditions = loadConditions();
-        const hireCharge = calculateHireCharge(openingKm, closingKm, hoursDay, conditions);
-  
-        const invoices = loadInvoices();
-        invoices.push({ date, tripSheetNo, vehicleNo, openingKm, closingKm, hoursDay, hireCharge });
-        saveInvoices(invoices);
-        renderInvoices();
-        form.reset();
-      });
-  
-      // Admin form submit
-      document.getElementById('adminForm').addEventListener('submit', (e) => {
-        e.preventDefault();
-        const form = e.target;
-        const newConditions = {
-          basicHours: parseFloat(form.basicHours.value),
-          basicKm: parseFloat(form.basicKm.value),
-          basicCharge: parseFloat(form.basicCharge.value),
-          extraHourRate: parseFloat(form.extraHourRate.value),
-          extraKmRate: parseFloat(form.extraKmRate.value)
-        };
-        saveConditions(newConditions);
-        alert('Conditions saved successfully.');
-        showUserPage();
-      });
-  
-      // Export to Excel button
-      document.getElementById('exportExcelBtn').addEventListener('click', exportToExcel);
-    }
-  
-    window.addEventListener('DOMContentLoaded', init);
   </script>
-  
 </body>
+
 </html>
